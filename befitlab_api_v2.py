@@ -725,6 +725,8 @@ def custom_food_manual(body: ManualFoodBody):
 # ======================
 
 @app.post("/generator/generate_day")
+@app.post("/generator/generate_day/")
+@app.post("/generate_day")
 def generate_day(body: GenerateDayBody):
     dd = body.day_date
 
