@@ -213,8 +213,26 @@ def day_view():
     g1, g2, g3 = st.columns(3)
     with g1:
         if st.button("🔄 Generar menú del día", use_container_width=True):
-            api_post("/generator/generate_day", json={"day_date": d.isoformat()})
-            st.rerun()
+            try:
+                for path in ("/generator/generate_day", "/generator/generate_day/", "/generate_day"):
+                    try:
+                        api_post(path, json={"day_date": d.isoformat()})
+                        st.rerun()
+                    except requests.HTTPError as exc:
+                        status = exc.response.status_code if exc.response else None
+                        if status != 404:
+                            raise
+                raise requests.HTTPError("No se encontró un endpoint compatible para generar el menú.")
+            except requests.HTTPError as exc:
+                status = exc.response.status_code if exc.response else None
+                if status in (404, None):
+                    st.error(
+                        "No se encontró el endpoint /generator/generate_day. "
+                        "Comprueba que el backend correcto esté en ejecución "
+                        "con: uvicorn befitlab_api_v2:app --reload --host 127.0.0.1 --port 8000"
+                    )
+                else:
+                    st.error(f"Error al generar el menú: {exc}")
     with g2:
         if st.button("✅ Aceptar menú", use_container_width=True):
             api_post("/generator/accept_day", params={"day_date": d.isoformat()})
