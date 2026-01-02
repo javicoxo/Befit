@@ -214,11 +214,18 @@ def day_view():
     with g1:
         if st.button("🔄 Generar menú del día", use_container_width=True):
             try:
-                api_post("/generator/generate_day", json={"day_date": d.isoformat()})
-                st.rerun()
+                for path in ("/generator/generate_day", "/generator/generate_day/", "/generate_day"):
+                    try:
+                        api_post(path, json={"day_date": d.isoformat()})
+                        st.rerun()
+                    except requests.HTTPError as exc:
+                        status = exc.response.status_code if exc.response else None
+                        if status != 404:
+                            raise
+                raise requests.HTTPError("No se encontró un endpoint compatible para generar el menú.")
             except requests.HTTPError as exc:
                 status = exc.response.status_code if exc.response else None
-                if status == 404:
+                if status in (404, None):
                     st.error(
                         "No se encontró el endpoint /generator/generate_day. "
                         "Comprueba que el backend correcto esté en ejecución "
