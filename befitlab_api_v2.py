@@ -3,10 +3,8 @@ from __future__ import annotations
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 from datetime import date, datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, List, Optional
 import os
-import math
-import random
 import requests
 import pandas as pd
 
@@ -727,9 +725,8 @@ def custom_food_manual(body: ManualFoodBody):
 # ======================
 
 @app.post("/generator/generate_day")
-def generate_day(body: dict):
-    # body puede venir como {"day_date": "YYYY-MM-DD"}
-    dd = body.get("day_date")
+def generate_day(body: GenerateDayBody):
+    dd = body.day_date
 
     if not dd:
         raise HTTPException(status_code=400, detail="day_date missing")
@@ -931,7 +928,7 @@ def add_extra(body: AddExtraBody):
     return {"ok": True}
 
 @app.post("/consumption/confirm_item")
-def confirm_item(meal_item_id: int = Query(...), body: ConfirmItemBody = None):
+def confirm_item(meal_item_id: int = Query(...), body: ConfirmItemBody = ...):
     if meal_item_id not in meal_items:
         raise HTTPException(404, "Item no encontrado")
     it = meal_items[meal_item_id]
